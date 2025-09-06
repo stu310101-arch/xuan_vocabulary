@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>英文單字學習與練習</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700&family=Kalam:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="text-gray-700">
+    <!-- 特效容器 -->
+    <div id="fx-container"></div>
+
+    <div id="app" class="container mx-auto p-4 max-w-5xl">
+        
+        <!-- 主頁面 -->
+        <div id="home-page" class="relative text-center min-h-screen flex flex-col justify-center items-center">
+             <!-- 搜尋功能 -->
+            <div class="absolute top-4 right-4 flex items-center bg-white rounded-full shadow-md">
+                <input type="text" id="search-input" placeholder="查詢單字..." class="py-2 px-4 rounded-l-full focus:outline-none w-48 sm:w-64">
+                <button onclick="searchWord()" class="bg-purple-400 text-white px-4 py-2 rounded-r-full hover:bg-purple-500"><i class="fa fa-search"></i></button>
+            </div>
+            
+            <h1 class="text-5xl font-bold mb-4" style="color: var(--color-purple);">英文單字隨身GO</h1>
+            <p class="text-xl mb-12" style="color: var(--color-text);">輕鬆學習，快樂練習</p>
+            <div class="space-y-6">
+                <button onclick="showPage('learn-main-page')" class="btn btn-pink text-2xl px-16 py-6">學習頁面</button>
+                <button onclick="showPage('practice-setup-page')" class="btn btn-blue text-2xl px-16 py-6">練習頁面</button>
+            </div>
+        </div>
+
+        <!-- 學習頁面 - 大單元 (A-Z) -->
+        <div id="learn-main-page" class="hidden">
+            <div class="flex justify-between items-center mb-6">
+                <button onclick="showPage('home-page')" class="btn btn-purple"><i class="fa fa-home mr-2"></i>主選單</button>
+                <h2 class="text-3xl font-bold" style="color: var(--color-text-dark);">選擇學習單元</h2>
+                <div></div>
+            </div>
+            <div id="major-units-grid" class="grid grid-cols-4 sm:grid-cols-6 lg:grid-cols-9 gap-4 text-center"></div>
+        </div>
+        
+        <!-- 學習頁面 - 小單元 -->
+        <div id="learn-minor-page" class="hidden">
+            <div class="flex justify-between items-center mb-6">
+                <button id="back-to-major-from-minor" class="btn btn-purple"><i class="fa fa-arrow-left mr-2"></i>返回</button>
+                <h2 id="minor-unit-title" class="text-3xl font-bold" style="color: var(--color-text-dark);"></h2>
+                <div id="minor-unit-header-right"></div>
+            </div>
+            <div id="minor-units-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+        </div>
+
+        <!-- 學習頁面 - 單字卡 -->
+        <div id="flashcard-page" class="hidden">
+             <div class="flex justify-between items-center mb-4">
+                <button id="back-to-minor-units" class="btn btn-purple"><i class="fa fa-arrow-left mr-2"></i>返回小單元</button>
+                <div id="flashcard-progress" class="text-xl font-bold" style="color: var(--color-text);"></div>
+                <div id="flashcard-header-right" class="min-w-[150px] text-right"></div>
+            </div>
+            <div class="flashcard-scene h-[60vh] sm:h-[70vh] w-full">
+                <div id="flashcard" class="flashcard" onclick="this.classList.toggle('is-flipped')">
+                    <div class="flashcard-face flashcard-front">
+                        <div class="relative w-full h-full flex flex-col justify-center items-center p-8">
+                            <button id="delete-word-btn" onclick="event.stopPropagation(); confirmDeleteWord();" class="hidden absolute top-4 right-4 text-2xl text-red-400 hover:text-red-600">
+                                <i class="fas fa-minus-circle"></i>
+                            </button>
+                            <h3 id="flashcard-word" class="text-6xl md:text-8xl font-bold text-center" style="color: var(--color-text-dark);"></h3>
+                            <button onclick="event.stopPropagation(); playPronunciation();" class="mt-8 text-5xl" style="color: var(--color-blue);"><i class="fas fa-volume-up"></i></button>
+                            <button id="favorite-btn" onclick="event.stopPropagation(); handleFavoriteClick()" class="absolute bottom-6 right-6 text-4xl text-gray-400 hover:text-yellow-400 transition-colors duration-200">
+                                <i class="fas fa-star"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="flashcard-face flashcard-back relative">
+                         <div id="flashcard-details" class="w-full h-full overflow-y-auto p-8 text-left">
+                            <!-- JS will inject content here -->
+                         </div>
+                         <button id="edit-word-btn" onclick="event.stopPropagation(); openEditWordModal();" class="absolute top-4 left-6 text-2xl text-blue-400 hover:text-blue-600">
+                            <i class="fas fa-pencil-alt"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="flex justify-center items-center mt-6 space-x-8">
+                <button onclick="prevCard()" class="btn btn-pink text-2xl px-8 py-4"><i class="fa fa-chevron-left"></i></button>
+                <button onclick="nextCard()" class="btn btn-pink text-2xl px-8 py-4"><i class="fa fa-chevron-right"></i></button>
+            </div>
+        </div>
+        
+        <!-- 最愛資料夾選擇頁面 -->
+        <div id="favorite-folders-page" class="hidden">
+            <div class="flex justify-between items-center mb-6">
+                <button onclick="showPage('learn-main-page')" class="btn btn-purple"><i class="fa fa-arrow-left mr-2"></i>返回</button>
+                <h2 class="text-3xl font-bold" style="color: var(--color-text-dark);">選擇最愛資料夾</h2>
+                <div></div> <!-- Placeholder for alignment -->
+            </div>
+            <div id="favorite-folders-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <!-- JS will generate folder buttons here -->
+            </div>
+        </div>
+
+
+        <!-- 練習頁面 - 設定 -->
+        <div id="practice-setup-page" class="hidden min-h-screen flex flex-col justify-center items-center text-center" style="background-color: #ffe5ec;">
+            <div class="bg-white p-8 sm:p-12 rounded-2xl shadow-lg w-full max-w-2xl">
+                <h2 class="text-3xl font-bold mb-6" style="color: var(--color-text-dark);">練習設定</h2>
+                
+                <div class="mb-6 text-left">
+                    <h3 class="text-xl font-semibold mb-3 text-center" style="color: var(--color-purple);">選擇練習範圍：</h3>
+                    <button onclick="openUnitSelectionModal()" class="w-full p-3 border-2 border-gray-200 rounded-lg text-lg text-center hover:bg-gray-50">點此選擇單元 (預設全部)</button>
+                </div>
+
+                <div class="mb-6 text-left">
+                    <h3 class="text-xl font-semibold mb-3 text-center" style="color: var(--color-pink);">選擇題型：</h3>
+                    <select id="quiz-type" class="w-full p-3 border-2 border-gray-200 rounded-lg text-lg">
+                        <option value="balloon">射氣球 (看中文選英文)</option>
+                        <option value="monster-challenge">怪物挑戰 (看提示拼單字)</option>
+                        <option value="potion">魔藥煉製 (單字配對)</option>
+                    </select>
+                </div>
+                
+                <div class="flex gap-4 mt-8">
+                    <button onclick="showPage('home-page')" class="btn btn-purple flex-1 py-4 text-xl">回主選單</button>
+                    <button onclick="startPractice()" class="btn btn-pink flex-1 py-4 text-xl">開始練習</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 射氣球遊戲頁面 -->
+        <div id="balloon-game-page" class="hidden">
+            <div class="w-full max-w-4xl mx-auto bg-white rounded-2xl shadow-lg p-4">
+                 <div class="relative w-full" style="padding-top: 75%;"> <!-- 4:3 aspect ratio -->
+                    <canvas id="balloon-game-canvas" class="absolute top-0 left-0 w-full h-full rounded-lg"></canvas>
+                    <div id="balloon-game-ui" class="absolute top-0 left-0 w-full h-full p-4 flex flex-col pointer-events-none">
+                        <div class="flex justify-between items-center text-gray-800 pointer-events-auto">
+                            <button onclick="endPractice()" class="btn btn-purple text-sm sm:text-base">結束遊戲</button>
+                            <div class="text-center"><div id="balloon-question" class="text-xl sm:text-3xl font-bold bg-white/70 px-4 py-2 rounded-lg"></div></div>
+                            <div class="flex flex-col sm:flex-row items-center gap-4">
+                                <div class="text-lg sm:text-2xl font-bold bg-white/70 px-3 py-1 rounded-lg">分數: <span id="balloon-score">0</span></div>
+                                <div class="text-lg sm:text-2xl font-bold bg-white/70 px-3 py-1 rounded-lg">時間: <span id="balloon-timer">0</span></div>
+                            </div>
+                        </div>
+                        <div id="balloon-game-overlay" class="absolute inset-0 bg-black/50 flex-col justify-center items-center text-center text-white p-4 rounded-lg hidden pointer-events-auto"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 成功/失敗頁面 (通用) -->
+        <div id="success-page" class="hidden fixed inset-0 flex flex-col justify-center items-center text-center z-50" style="background-color: var(--color-light-blue);"><h1 class="text-8xl font-bold mb-4" style="color: var(--color-grass-green);">成功</h1><h2 class="text-5xl font-bold mb-12" style="color: var(--color-bright-red);">恭喜!!!</h2><button onclick="showPage('practice-setup-page')" class="btn btn-pink text-2xl px-12 py-4">再玩一次</button></div>
+        <div id="failure-page" class="hidden fixed inset-0 flex flex-col justify-center items-center text-center z-50" style="background-color: #1a1a1a; color: white;"><h1 class="text-8xl font-bold mb-4" style="color: var(--color-bright-red);">失敗</h1><p class="text-3xl mb-12">別灰心，下次再努力！加油！</p><button onclick="showPage('practice-setup-page')" class="btn btn-purple text-2xl px-12 py-4">再試一次</button></div>
+    </div>
+    
+    <!-- 全域彈出視窗 -->
+    <div id="global-modals">
+        <!-- 單元選擇彈出視窗 -->
+        <div id="unit-selection-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 p-4">
+            <div class="bg-white p-6 rounded-2xl shadow-lg max-w-2xl w-full max-h-[80vh] flex flex-col"><h3 class="text-2xl font-bold mb-4 text-center" style="color: var(--color-purple);">選擇練習範圍 (可複選)</h3><div id="unit-selection-container" class="overflow-y-auto flex-grow border-t border-b py-4"></div><div class="mt-6 text-center"><button onclick="confirmUnitSelection()" class="btn btn-pink text-xl px-12">確認</button></div></div>
+        </div>
+        <!-- 新增/編輯單字表單視窗 -->
+        <div id="word-form-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 p-4">
+            <div class="bg-white p-6 rounded-2xl shadow-lg max-w-lg w-full max-h-[90vh] flex flex-col">
+                <h3 id="word-form-title" class="text-2xl font-bold mb-4 text-center" style="color: var(--color-purple);"></h3>
+                <div class="overflow-y-auto flex-grow pr-4 space-y-4">
+                    <div><label class="font-semibold">英文單字</label><input type="text" id="word-form-en" class="w-full p-2 border rounded mt-1 bg-gray-200" disabled></div>
+                    
+                    <div id="definitions-container" class="space-y-4">
+                        <!-- JS will inject definition blocks here -->
+                    </div>
+
+                    <button onclick="addDefinitionBlock()" class="btn btn-blue w-full mt-2"><i class="fa fa-plus mr-2"></i>新增定義</button>
+
+                    <div><label class="font-semibold">同義字 (用逗號分隔)</label><input type="text" id="word-form-synonyms" class="w-full p-2 border rounded mt-1" placeholder="如: apple, banana..."></div>
+                </div>
+                <div class="mt-6 pt-4 border-t flex justify-end gap-4">
+                    <button onclick="closeModal('word-form-modal')" class="btn btn-purple px-8 py-3 text-lg"><i class="fa fa-times mr-2"></i>取消</button>
+                    <button id="word-form-save-btn" class="btn btn-pink px-8 py-3 text-lg"><i class="fa fa-save mr-2"></i>儲存</button>
+                </div>
+            </div>
+        </div>
+         <!-- 加入最愛資料夾選擇視窗 -->
+        <div id="add-to-favorite-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 p-4">
+            <div class="bg-white p-8 rounded-2xl shadow-lg text-center max-w-lg w-full">
+                <h3 class="text-2xl font-bold mb-6" style="color: var(--color-text-dark);">選擇要加入的資料夾</h3>
+                <div id="favorite-modal-folders" class="grid grid-cols-3 gap-4 mb-6">
+                    <!-- JS will inject definition blocks here -->
+                </div>
+            </div>
+        </div>
+        <!-- 確認視窗 (通用) -->
+        <div id="confirm-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 p-4">
+            <div class="bg-white p-8 rounded-2xl shadow-lg text-center max-w-sm w-full">
+                <h3 id="confirm-modal-title" class="text-2xl font-bold mb-4" style="color: var(--color-text-dark);"></h3>
+                <p id="confirm-modal-text" class="text-lg mb-6"></p>
+                <div class="flex justify-center gap-4">
+                    <button id="confirm-modal-yes" class="btn btn-pink px-10 py-3 text-lg">是</button>
+                    <button onclick="closeModal('confirm-modal')" class="btn btn-purple px-10 py-3 text-lg">否</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- 怪物遊戲 HTML 結構 -->
+    <div id="monster-game-container">
+        <!-- 設定畫面 -->
+        <div id="monster-setup-page" class="monster-game-screen flex-col hidden">
+            <div class="sun"></div><div class="cloud c1"></div><div class="cloud c2"></div><div class="cloud c3"></div>
+            <div class="relative w-full max-w-md p-8 bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg text-center z-10">
+                <h1 class="text-4xl font-bold text-gray-800 mb-6">英文單字怪獸挑戰</h1>
+                <div class="mb-6"><label for="monster-hp-select" class="block text-lg font-medium text-gray-700 mb-2">選擇怪物血量</label><select id="monster-hp-select" class="w-full p-3 border border-gray-300 rounded-lg text-lg focus:ring-2 focus:ring-blue-500"><option value="100">100 HP</option><option value="300">300 HP</option><option value="500">500 HP</option></select></div>
+                <div class="mb-8"><label for="monster-time-select" class="block text-lg font-medium text-gray-700 mb-2">選擇時間限制</label><select id="monster-time-select" class="w-full p-3 border border-gray-300 rounded-lg text-lg focus:ring-2 focus:ring-blue-500"><option value="75">75 秒</option><option value="120">120 秒</option><option value="180">180 秒</option></select></div>
+                <div class="flex gap-4">
+                     <button id="monster-back-btn" class="w-full bg-gray-400 text-white py-3 rounded-lg text-xl font-bold hover:bg-gray-500 transition duration-300 transform hover:scale-105">返回設定</button>
+                    <button id="monster-start-btn" class="w-full bg-blue-600 text-white py-3 rounded-lg text-xl font-bold hover:bg-blue-700 transition duration-300 transform hover:scale-105">開始挑戰！</button>
+                </div>
+            </div>
+            <div class="grass"></div>
+        </div>
+        <!-- 遊戲畫面 -->
+        <div id="monster-game-page" class="monster-game-screen flex-col items-center justify-between hidden p-4 md:p-8">
+            <div class="w-full flex justify-between items-start text-gray-200"><div id="monster-hp-bar-container" class="relative w-48 h-8 bg-gray-900/50 rounded-full border-2 border-black shadow-inner"><div id="monster-hp-bar-fill" class="h-full bg-red-500 rounded-full transition-all duration-300" style="width: 100%;"></div><span id="monster-hp-text" class="absolute inset-0 w-full h-full flex items-center justify-center text-white font-bold text-lg tracking-wider">HP: 100/100</span></div><div id="monster-timer-display" class="text-3xl font-bold text-red-500">60</div></div>
+            <div class="flex flex-col items-center"><div id="monster-display" class="mb-4" style="width: 200px; height: 200px;"></div><div id="monster-hint-display" class="text-2xl md:text-3xl font-bold text-center p-4 bg-black/40 backdrop-blur-sm rounded-lg shadow"><p id="monster-word-hint" class="text-gray-100"></p><p id="monster-word-structure" class="text-sky-400 mt-1"></p></div></div>
+            <div class="w-full max-w-md flex flex-col items-center"><p id="monster-feedback-display" class="h-6 text-red-400 font-bold mb-2"></p><input type="text" id="monster-answer-input" class="w-full p-4 border-2 bg-gray-800/80 border-gray-600 text-white rounded-lg text-2xl text-center focus:ring-2 focus:ring-blue-500 focus:border-blue-500 placeholder-gray-400" placeholder="在這裡輸入答案..." autocomplete="off"></div>
+            <div class="w-full max-w-md flex justify-between items-center"><button id="monster-end-game-btn" class="bg-red-600 text-white py-2 px-4 rounded-lg font-bold hover:bg-red-700 transition duration-300">直接結束</button><button id="monster-skip-btn" class="bg-yellow-500 text-white py-2 px-4 rounded-lg font-bold hover:bg-yellow-600 transition duration-300">跳過此題 (怪物會回血)</button></div>
+        </div>
+        <!-- 成功畫面 -->
+        <div id="monster-win-page" class="monster-game-screen hidden flex-col items-center justify-center text-center bg-gradient-to-b from-sky-200 to-sky-400"><div class="relative"><h1 class="text-9xl font-black text-green-500 text-stroke-white">成功</h1><p class="text-3xl font-bold text-black mt-4">你是勇者 你好棒!</p></div><button onclick="switchScreen('monster-win-page', 'monster-setup-page')" class="mt-8 bg-white text-blue-600 py-3 px-8 rounded-lg text-xl font-bold hover:bg-gray-200 transition duration-300">再玩一次</button></div>
+        <!-- 失敗畫面 -->
+        <div id="monster-lose-page" class="monster-game-screen hidden flex-col items-center justify-center text-center bg-gradient-to-b from-black via-black to-red-900 glitch-container">
+            <div class="relative w-full text-center z-10">
+                <h1 class="glitch-text text-9xl font-black text-red-500 text-stroke-red" data-text="失敗">失敗</h1>
+                <p class="glitch-text text-2xl text-white mt-6" data-text="怪物吞噬了英文世界">怪物吞噬了英文世界</p>
+                <p class="glitch-text text-xl text-white mt-2" data-text="努力學習 別灰心 英文世界等你來拯救!">努力學習 別灰心 英文世界等你來拯救!</p>
+                <button onclick="switchScreen('monster-lose-page', 'monster-setup-page')" class="mt-8 bg-gray-700 text-white py-3 px-8 rounded-lg text-xl font-bold hover:bg-gray-600 transition duration-300 border-2 border-white">重新來過</button>
+            </div>
+            <div class="glitch-block"></div>
+            <div class="glitch-bg"></div>
+        </div>
+    </div>
+    
+    <!-- 魔藥煉製遊戲 Wrapper -->
+    <div id="potion-game-wrapper" class="hidden fixed inset-0 w-full h-full text-white">
+        <!-- Start Screen -->
+        <div id="potion-start-screen" class="w-full h-full flex items-center justify-center text-center p-8 space-y-8">
+            <div>
+                <h1 class="text-6xl md:text-8xl font-bold text-yellow-300 kalam-font" style="text-shadow: 0 0 15px #fde047;">Word Potion</h1>
+                <p class="text-xl text-gray-300">單字魔藥</p>
+                <div class="space-y-4 flex flex-col items-center mt-8">
+                    <h2 class="text-2xl text-violet-300">選擇難度</h2>
+                    <button data-difficulty="easy" class="potion-difficulty-btn btn-magic w-64 text-lg font-bold py-3 px-6 rounded-full">初級 (3題)</button>
+                    <button data-difficulty="medium" class="potion-difficulty-btn btn-magic w-64 text-lg font-bold py-3 px-6 rounded-full">中級 (5題)</button>
+                    <button data-difficulty="hard" class="potion-difficulty-btn btn-magic w-64 text-lg font-bold py-3 px-6 rounded-full">高級 (8題)</button>
+                    <button data-difficulty="ultimate" class="potion-difficulty-btn btn-magic w-64 text-lg font-bold py-3 px-6 rounded-full">終極 (10題)</button>
+                </div>
+                 <button id="potion-collection-btn" class="mt-8 text-yellow-300 hover:text-yellow-200 underline text-lg">查看我的魔藥收藏室</button>
+                 <button onclick="endPractice()" class="mt-4 text-gray-400 hover:text-white">返回練習設定</button>
+            </div>
+        </div>
+
+        <!-- Game Screen -->
+        <div id="potion-game-screen" class="hidden fixed inset-0 w-full h-full">
+            <div class="absolute top-2 left-2 right-2 p-2 bg-black/20 rounded-lg flex justify-between items-center z-50 text-base md:text-lg">
+                <button id="potion-back-to-menu-btn" class="bg-pink-600 hover:bg-pink-700 text-white font-bold py-1 px-3 rounded-lg text-sm">結束遊戲</button>
+                <div id="potion-timer" class="font-mono font-semibold">時間: 00:00</div>
+                <div id="potion-star-rating" class="flex text-2xl md:text-3xl">
+                    <span class="star filled">★</span>
+                    <span class="star filled">★</span>
+                    <span class="star filled">★</span>
+                </div>
+                <div class="font-semibold">
+                    錯誤: <span id="potion-mistakes-count">0</span>
+                </div>
+            </div>
+            
+            <div id="potion-game-board" class="w-full h-full">
+                <!-- Bubbles will be injected here -->
+            </div>
+
+            <svg id="potion-line-svg" class="absolute top-0 left-0 w-full h-full pointer-events-none z-10">
+                <line id="potion-magic-line" class="magic-line" x1="0" y1="0" x2="0" y2="0" style="display: none;"/>
+            </svg>
+
+            <div id="potion-cauldron" class="cauldron z-20">
+                 <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <radialGradient id="potBodyGradient" cx="50%" cy="40%" r="60%" fx="50%" fy="40%">
+                            <stop offset="0%" style="stop-color:#4a5568" />
+                            <stop offset="100%" style="stop-color:#111827" />
+                        </radialGradient>
+                        <linearGradient id="potRimGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                            <stop offset="0%" style="stop-color:#718096"/>
+                            <stop offset="50%" style="stop-color:#4a5568"/>
+                            <stop offset="100%" style="stop-color:#2d3748"/>
+                        </linearGradient>
+                        <filter id="liquidGlow" x="-50%" y="-50%" width="200%" height="200%">
+                            <feGaussianBlur stdDeviation="5" result="coloredBlur"/>
+                            <feMerge>
+                                <feMergeNode in="coloredBlur"/>
+                                <feMergeNode in="SourceGraphic"/>
+                            </feMerge>
+                        </filter>
+                        <filter id="fireGlow" x="-50%" y="-50%" width="200%" height="200%">
+                            <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
+                            <feMerge>
+                                <feMergeNode in="coloredBlur"/>
+                                <feMergeNode in="SourceGraphic"/>
+                            </feMerge>
+                        </filter>
+                        <linearGradient id="woodGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                            <stop offset="0%" style="stop-color:#a16207" />
+                            <stop offset="100%" style="stop-color:#451a03" />
+                        </linearGradient>
+                    </defs>
+                    <g>
+                        <rect x="65" y="178" width="70" height="14" fill="url(#woodGradient)" stroke="#422006" stroke-width="1.5" rx="5" transform="rotate(-5, 100, 185)"/>
+                        <rect x="60" y="170" width="80" height="14" fill="url(#woodGradient)" stroke="#422006" stroke-width="1.5" rx="5" />
+                        <rect x="70" y="165" width="60" height="14" fill="url(#woodGradient)" stroke="#422006" stroke-width="1.5" rx="5" transform="rotate(10, 100, 172)"/>
+                        <ellipse cx="100" cy="172" rx="20" ry="5" fill="#ef4444" opacity="0.5" filter="url(#fireGlow)">
+                            <animate attributeName="opacity" dur="2s" values="0.4;0.7;0.4" repeatCount="indefinite"/>
+                            <animate attributeName="rx" dur="1.5s" values="20;23;20" repeatCount="indefinite" begin="0.5s"/>
+                        </ellipse>
+                        <g transform="translate(0, -10)">
+                            <path d="M 100 180 C 70 175, 65 140, 100 130 C 135 140, 130 175, 100 180 Z" fill="#ef4444" opacity="0.8">
+                                <animate attributeName="d" dur="1.3s" repeatCount="indefinite" values="M 100 180 C 70 175, 65 140, 100 130 C 135 140, 130 175, 100 180 Z; M 100 180 C 75 177, 70 145, 100 135 C 130 145, 125 177, 100 180 Z; M 100 180 C 70 175, 65 140, 100 130 C 135 140, 130 175, 100 180 Z"/>
+                            </path>
+                            <path d="M 100 180 C 80 175, 80 155, 100 145 C 120 155, 120 175, 100 180 Z" fill="#f97316">
+                                <animate attributeName="d" dur="1s" repeatCount="indefinite" begin="0.2s" values="M 100 180 C 80 175, 80 155, 100 145 C 120 155, 120 175, 100 180 Z; M 100 180 C 85 177, 85 160, 100 150 C 115 160, 115 177, 100 180 Z; M 100 180 C 80 175, 80 155, 100 145 C 120 155, 120 175, 100 180 Z"/>
+                            </path>
+                            <path d="M 100 180 C 90 178, 90 168, 100 160 C 110 168, 110 178, 100 180 Z" fill="#fde047">
+                                <animate attributeName="d" dur="0.8s" repeatCount="indefinite" begin="0.1s" values="M 100 180 C 90 178, 90 168, 100 160 C 110 168, 110 178, 100 180 Z; M 100 180 C 93 179, 93 170, 100 165 C 107 170, 107 179, 100 180 Z; M 100 180 C 90 178, 90 168, 100 160 C 110 168, 110 178, 100 180 Z"/>
+                            </path>
+                        </g>
+                    </g>
+                    <path d="M 30 100 C 30 170, 170 170, 170 100" fill="url(#potBodyGradient)" stroke="#000" stroke-width="2"/>
+                    <path d="M 25 80 Q 100 60, 175 80 L 170 100 Q 100 80, 30 100 Z" fill="url(#potRimGradient)" stroke="#000" stroke-width="1.5"/>
+                    <ellipse cx="100" cy="95" rx="65" ry="20" fill="#a78bfa" filter="url(#liquidGlow)"/>
+                    <circle cx="80" cy="90" r="5" fill="#c4b5fd">
+                        <animate attributeName="cy" dur="1.5s" values="100;85;100" repeatCount="indefinite" />
+                        <animate attributeName="r" dur="1.5s" values="0;5;0" repeatCount="indefinite" />
+                    </circle>
+                    <circle cx="120" cy="95" r="3" fill="#ddd6fe">
+                        <animate attributeName="cy" dur="2s" values="105;90;105" repeatCount="indefinite" begin="0.5s"/>
+                        <animate attributeName="r" dur="2s" values="0;3;0" repeatCount="indefinite" begin="0.5s"/>
+                    </circle>
+                    <circle cx="100" cy="98" r="4" fill="#c4b5fd">
+                        <animate attributeName="cy" dur="1s" values="102;95;102" repeatCount="indefinite" begin="0.2s"/>
+                        <animate attributeName="r" dur="1s" values="0;4;0" repeatCount="indefinite" begin="0.2s"/>
+                    </circle>
+                </svg>
+            </div>
+        </div>
+
+        <!-- Level Complete Modal -->
+        <div id="potion-level-complete-modal" class="hidden fixed inset-0 modal-backdrop flex items-center justify-center z-50">
+            <div class="bg-gray-800 rounded-2xl p-8 text-center border-4 border-yellow-300 shadow-2xl shadow-yellow-300/30 max-w-sm w-full mx-4">
+                <h2 class="text-4xl font-bold text-yellow-300 mb-2 kalam-font">調製成功！</h2>
+                <div id="potion-final-star-rating" class="flex justify-center text-5xl my-4">
+                    <!-- Stars will be injected here -->
+                </div>
+                <p id="potion-completion-time" class="text-lg text-gray-400 mb-4"></p>
+                <div id="potion-reward-section">
+                    <p class="text-lg mb-2">你解鎖了新的魔藥:</p>
+                    <p id="potion-name" class="text-2xl font-bold text-violet-300"></p>
+                    <p id="potion-desc" class="text-gray-400 mt-2 mb-6"></p>
+                </div>
+                <div id="potion-no-reward-section" class="hidden">
+                     <p class="text-lg my-8">表現不錯！但這次沒有解鎖新的魔藥，再接再厲！</p>
+                </div>
+                <button id="potion-replay-btn" class="btn-magic w-full text-lg font-bold py-3 px-6 rounded-full">再次挑戰</button>
+                <button id="potion-main-menu-btn" class="mt-4 text-gray-400 hover:text-white">返回主選單</button>
+            </div>
+        </div>
+        
+        <!-- Collection Modal -->
+        <div id="potion-collection-modal" class="hidden fixed inset-0 modal-backdrop flex items-center justify-center z-50 p-4">
+            <div class="bg-gray-800 rounded-2xl p-6 text-center border-4 border-violet-400 shadow-2xl shadow-violet-400/30 w-full max-w-2xl h-full max-h-[90vh] flex flex-col">
+                <h2 class="text-4xl font-bold text-violet-300 mb-4 kalam-font">魔藥收藏室</h2>
+                <div id="potion-collection-grid" class="flex-grow overflow-y-auto pr-2 space-y-4">
+                    <!-- Collection items will be injected here -->
+                </div>
+                <button id="potion-collection-back-btn" class="mt-6 btn-magic w-1/2 mx-auto text-lg font-bold py-2 px-6 rounded-full">返回</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
+

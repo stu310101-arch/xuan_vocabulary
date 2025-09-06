@@ -1,0 +1,223 @@
+/* --- 全域 & 主應用程式樣式 --- */
+body {
+    font-family: 'Inter', 'Noto Sans TC', sans-serif;
+    background-color: #fffde7; /* 淡黃色背景 */
+}
+:root {
+    --color-pink: #ffc2d1;
+    --color-light-pink: #ffe5ec;
+    --color-purple: #c8b6ff;
+    --color-light-purple: #e7e0ff;
+    --color-blue: #bde0fe;
+    --color-light-blue: #e2efff;
+    --color-green: #b0e0b8;
+    --color-grass-green: #7CFC00;
+    --color-red: #ff9999;
+    --color-bright-red: #ff3b3b;
+    --color-text: #5d5d5d;
+    --color-text-dark: #3a3a3a;
+}
+.btn {
+    transition: all 0.3s ease;
+    border-radius: 9999px;
+    padding: 0.75rem 1.5rem;
+    font-weight: 700;
+    color: var(--color-text-dark);
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+.btn:hover { transform: translateY(-2px); box-shadow: 0 6px 10px rgba(0,0,0,0.15); }
+.btn-pink { background-color: var(--color-pink); }
+.btn-purple { background-color: var(--color-purple); }
+.btn-blue { background-color: var(--color-blue); }
+
+.flashcard-scene { perspective: 1000px; }
+.flashcard { width: 100%; height: 100%; position: relative; transform-style: preserve-3d; transition: transform 0.6s; }
+.flashcard.is-flipped { transform: rotateY(180deg); }
+.flashcard-face {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    backface-visibility: hidden;
+    border-radius: 1.5rem;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    overflow: hidden; /* 確保內容不會溢出 */
+}
+.flashcard-front {
+    background: white;
+}
+.flashcard-back {
+    background: linear-gradient(to top right, var(--color-light-pink), var(--color-light-blue));
+    transform: rotateY(180deg);
+}
+
+#fx-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 9999; }
+.confetti-success { position: absolute; width: 10px; height: 20px; opacity: 0.9; animation: confetti-fall 5s linear infinite; }
+@keyframes confetti-fall { 0% { transform: translateY(-10vh) rotate(0deg); opacity: 1; } 100% { transform: translateY(110vh) rotate(720deg); opacity: 0; } }
+
+#balloon-game-canvas { cursor: crosshair; background: linear-gradient(to bottom, #87CEEB, #f0f9ff); }
+
+#favorite-btn.favorited { color: #FBBF24; /* yellow-400 */ }
+
+
+/* --- 怪物遊戲專用樣式 --- */
+.monster-game-screen {
+    transition: opacity 0.5s ease-in-out;
+    position: fixed; /* 使用 fixed 以覆蓋整個視窗 */
+    width: 100vw;
+    height: 100vh;
+    top: 0;
+    left: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100; /* 確保遊戲在最上層 */
+}
+
+#monster-setup-page { background: linear-gradient(to bottom, #87CEEB 20%, #B0E0E6 100%); overflow: hidden; }
+.sun { position: absolute; top: 5%; right: 8%; width: 80px; height: 80px; background: radial-gradient(circle, #FFF7B3, #FFD700); border-radius: 50%; box-shadow: 0 0 40px rgba(255, 223, 0, 0.8); }
+.grass { position: absolute; bottom: 0; left: 0; width: 100%; height: 15%; background: linear-gradient(to top, #6B8E23, #9ACD32); z-index: 5; }
+.grass::before { content: ''; position: absolute; top: -20px; left: 0; width: 100%; height: 20px; background-size: 40px 40px; background-image: linear-gradient(315deg, #9ACD32 50%, transparent 50%), linear-gradient(45deg, #9ACD32 50%, transparent 50%); background-position: -20px 0; }
+.cloud { position: absolute; background: white; border-radius: 50%; opacity: 0.9; animation: float linear infinite; }
+.cloud.c1 { width: 200px; height: 60px; top: 15%; animation-duration: 75s; animation-delay: -10s; }
+.cloud.c2 { width: 150px; height: 45px; top: 25%; animation-duration: 90s; animation-delay: -30s; }
+.cloud.c3 { width: 250px; height: 70px; top: 20%; animation-duration: 60s; animation-delay: -50s; }
+.cloud::before, .cloud::after { content: ''; position: absolute; background: white; border-radius: 50%; }
+.cloud.c1::before { width: 100px; height: 100px; top: -50px; left: 25px; } .cloud.c1::after  { width: 120px; height: 120px; top: -60px; right: 25px; }
+.cloud.c2::before { width: 70px; height: 70px; top: -35px; left: 15px; } .cloud.c2::after  { width: 90px; height: 90px; top: -45px; right: 15px; }
+.cloud.c3::before { width: 130px; height: 130px; top: -65px; left: 30px; } .cloud.c3::after  { width: 150px; height: 150px; top: -75px; right: 30px; }
+@keyframes float { from { transform: translateX(-300px); } to { transform: translateX(calc(100vw + 100px)); } }
+
+#monster-game-page { background: radial-gradient(ellipse at 50% 100%, #6b7280, #1f2937); }
+
+.text-stroke-white { text-shadow: -2px -2px 0 #fff, 2px -2px 0 #fff, -2px 2px 0 #fff, 2px 2px 0 #fff; }
+.text-stroke-red { text-shadow: -2px -2px 0 #fff, 2px -2px 0 #fff, -2px 2px 0 #fff, 2px 2px 0 #fff; }
+
+.confetti { position: absolute; width: 10px; height: 20px; opacity: 0.8; animation: fall 5s linear infinite; }
+@keyframes fall { 0% { transform: translateY(-10vh) rotate(0deg); opacity: 1; } 100% { transform: translateY(110vh) rotate(720deg); opacity: 0; } }
+
+@keyframes monster-bob { 0% { transform: translateY(0); } 50% { transform: translateY(-15px); } 100% { transform: translateY(0); } }
+.monster-bob-animation { animation: monster-bob 2s ease-in-out infinite; }
+@keyframes monster-tilt { 0%, 100% { transform: translateY(0) rotate(0deg); } 25% { transform: translateY(-5px) rotate(-8deg); } 75% { transform: translateY(-5px) rotate(8deg); } }
+.monster-tilt-animation { animation: monster-tilt 4s ease-in-out infinite; transform-origin: bottom; }
+@keyframes monster-hop { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-20px); } }
+.monster-hop-animation { animation: monster-hop 1s ease-in-out infinite; }
+@keyframes monster-shake { 10%, 90% { transform: translate3d(-2px, 0, 0) rotate(-1deg); } 20%, 80% { transform: translate3d(4px, 0, 0) rotate(2deg); } 30%, 50%, 70% { transform: translate3d(-6px, 0, 0) rotate(-3deg); } 40%, 60% { transform: translate3d(6px, 0, 0) rotate(3deg); } }
+.shake-animation { animation: monster-shake 0.8s cubic-bezier(.36,.07,.19,.97) both; }
+
+/* --- 怪物遊戲失敗故障特效 --- */
+.glitch-container { overflow: hidden; position: relative; }
+.glitch-text { position: relative; }
+.glitch-bg { animation: glitch-bg-anim 1s linear infinite alternate; pointer-events: none; }
+.glitch-text::before, .glitch-text::after { content: attr(data-text); position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: transparent; clip-path: inset(0 0 0 0); }
+.glitch-text::before { left: 2px; text-shadow: -2px 0 #ff00c1; animation: glitch-text-anim-1 2s infinite linear alternate-reverse; }
+.glitch-text::after { left: -2px; text-shadow: -2px 0 #00fff9, 2px 2px #ff00c1; animation: glitch-text-anim-2 3s infinite linear alternate-reverse; }
+.glitch-container::before { content: ""; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(0deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.05) 50%, rgba(255, 255, 255, 0) 100%); background-size: 100% 4px; animation: scanlines 2s linear infinite; pointer-events: none; }
+.glitch-block { position: absolute; background: #ff00c1; opacity: 0.3; animation: glitch-block-anim 5s steps(1) infinite; pointer-events: none; }
+@keyframes glitch-block-anim { 0% { top: 10%; left: 10%; width: 50px; height: 50px; } 10% { top: 50%; left: 80%; width: 20px; height: 100px; } 20% { top: 90%; left: 40%; width: 80px; height: 30px; background: #00fff9;} 30% { top: 30%; left: 25%; width: 100px; height: 20px; } 40% { top: 70%; left: 60%; width: 40px; height: 90px; } 50% { top: 20%; left: 70%; width: 60px; height: 60px; background: #ffff00;} 60% { top: 60%; left: 15%; width: 90px; height: 40px; } 70% { top: 5%; left: 50%; width: 30px; height: 70px; } 80% { top: 80%; left: 30%; width: 120px; height: 25px; background: #00fff9;} 90% { top: 40%; left: 90%; width: 25px; height: 80px; } 100% { top: 15%; left: 5%; width: 70px; height: 50px; } }
+@keyframes scanlines { from { background-position: 0 0; } to { background-position: 0 100%; } }
+@keyframes glitch-bg-anim { 0% { transform: translate(0, 0); } 20% { transform: translate(-5px, 5px); } 40% { transform: translate(5px, -5px); } 60% { transform: translate(-5px, -5px); } 80% { transform: translate(5px, 5px); } 100% { transform: translate(0, 0); } }
+@keyframes glitch-text-anim-1 { 0% { clip-path: inset(45% 0 45% 0); transform: skew(0.5deg); } 10% { clip-path: inset(15% 0 75% 0); } 20% { clip-path: inset(60% 0 10% 0); transform: skew(-0.5deg); } 30% { clip-path: inset(30% 0 40% 0); } 40% { clip-path: inset(80% 0 5% 0); transform: skew(0.2deg); } 50% { clip-path: inset(25% 0 65% 0); } 60% { clip-path: inset(70% 0 20% 0); transform: skew(-0.2deg); } 70% { clip-path: inset(10% 0 85% 0); } 80% { clip-path: inset(55% 0 35% 0); transform: skew(0.7deg); } 90% { clip-path: inset(90% 0 2% 0); } 100% { clip-path: inset(40% 0 50% 0); transform: skew(-0.7deg); } }
+@keyframes glitch-text-anim-2 { 0% { clip-path: inset(78% 0 2% 0); transform: skew(0.7deg); } 10% { clip-path: inset(10% 0 80% 0); } 20% { clip-path: inset(95% 0 1% 0); transform: skew(-0.7deg); } 30% { clip-path: inset(33% 0 43% 0); } 40% { clip-path: inset(2% 0 90% 0); transform: skew(0.3deg); } 50% { clip-path: inset(40% 0 40% 0); } 60% { clip-path: inset(80% 0 15% 0); transform: skew(-0.3deg); } 70% { clip-path: inset(20% 0 77% 0); } 80% { clip-path: inset(65% 0 25% 0); transform: skew(0.9deg); } 90% { clip-path: inset(5% 0 88% 0); } 100% { clip-path: inset(50% 0 30% 0); transform: skew(-0.9deg); } }
+
+/* --- 魔藥煉製遊戲專用樣式 --- */
+#potion-game-wrapper {
+    font-family: 'Noto Sans TC', sans-serif;
+    background-color: #1f2937;
+    background-image:
+        radial-gradient(circle at 10% 10%, rgba(253, 224, 71, 0.1) 0%, transparent 30%),
+        radial-gradient(circle at 80% 90%, rgba(139, 92, 246, 0.1) 0%, transparent 30%);
+    overscroll-behavior: none;
+}
+.kalam-font {
+    font-family: 'Kalam', cursive;
+}
+.potion-bubble {
+    position: absolute;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 9999px;
+    cursor: pointer;
+    user-select: none;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    animation: potion-float 6s ease-in-out infinite;
+    touch-action: none;
+}
+.potion-bubble:hover {
+    transform: scale(1.1);
+    z-index: 50 !important;
+}
+.potion-bubble.selected {
+    animation: none;
+    box-shadow: 0 0 20px 5px #fde047;
+    transform: scale(1.1);
+}
+.potion-bubble.paired {
+    pointer-events: none;
+}
+.magic-line {
+    stroke: #fde047;
+    stroke-width: 4;
+    stroke-linecap: round;
+    filter: drop-shadow(0 0 6px #fde047);
+    pointer-events: none;
+}
+.cauldron {
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 220px;
+    height: 220px;
+    pointer-events: none;
+    transition: transform 0.5s;
+}
+.cauldron.active {
+    animation: bubble-pot 0.8s ease-in-out;
+}
+.star {
+    color: #4b5563; /* gray-600 */
+    transition: color 0.3s;
+}
+.star.filled {
+    color: #facc15; /* yellow-400 */
+    animation: pop-in 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+}
+@keyframes potion-float {
+    0% { transform: translateY(0px) translateX(0px) rotate(0deg); }
+    25% { transform: translateY(-5px) translateX(5px) rotate(2deg); }
+    50% { transform: translateY(0px) translateX(0px) rotate(0deg); }
+    75% { transform: translateY(5px) translateX(-5px) rotate(-2deg); }
+    100% { transform: translateY(0px) translateX(0px) rotate(0deg); }
+}
+@keyframes bubble-pot {
+    0% { transform: translateX(-50%) scale(1); }
+    50% { transform: translateX(-50%) scale(1.1); }
+    100% { transform: translateX(-50%) scale(1); }
+}
+
+@keyframes pop-in {
+    0% { transform: scale(0); }
+    100% { transform: scale(1); }
+}
+.modal-backdrop {
+    background-color: rgba(0,0,0,0.7);
+}
+.btn-magic {
+    background: linear-gradient(45deg, #8b5cf6, #ec4899);
+    border: 2px solid #a78bfa;
+    box-shadow: 0 0 10px rgba(167, 139, 250, 0.5), inset 0 0 5px rgba(255, 255, 255, 0.3);
+    transition: all 0.3s ease;
+}
+.btn-magic:hover {
+    box-shadow: 0 0 20px rgba(167, 139, 250, 0.8), inset 0 0 8px rgba(255, 255, 255, 0.4);
+    transform: translateY(-2px);
+}
+.btn-magic:disabled {
+    background: #4b5563;
+    border-color: #6b7280;
+    cursor: not-allowed;
+    opacity: 0.5;
+    box-shadow: none;
+}
+
